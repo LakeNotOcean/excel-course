@@ -17,7 +17,6 @@ export class DomListener{
                 throw new Error(`Methdo ${method} is not implemented`);
             this[method]=this[method].bind(this);
             this.$root.on(listener,this[method]);
-            console.log(method);
         });
     }
     removeDOMListeners(){
