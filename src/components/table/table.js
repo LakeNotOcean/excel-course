@@ -1,10 +1,25 @@
 import { ExcelComponent } from "@core/ExcelComponent";
 import { createTable } from "./table.tamplate";
+import { resizeHandler } from "./table.resize";
 
 export class Table extends ExcelComponent{
     static className='excel__table';
     
-    toHTML(){
-        return createTable();
+    
+    constructor($root){
+        super($root,{
+            listeners:['mousedown']
+        });
     }
+    
+    toHTML(){
+        return createTable(20);
+    }
+
+    onMousedown(event){
+        if (event.target.dataset.resize){
+            resizeHandler(this.$root,event);
+        }
+    }
+    
 }
