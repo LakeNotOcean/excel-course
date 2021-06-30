@@ -7,6 +7,6 @@
     },
     "rules":{
          
-    }
+    },
     //"extends": ["eslint:recommended","google"]
 }
