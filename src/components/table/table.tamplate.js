@@ -12,11 +12,12 @@ function createCol(col,resizeIndex=-1){
     `;
 }
 
-function createCell(_,resizeIndex=-1){
+function createCell(row,resizeIndex=-1){
     return `
-    <div class="cell" contenteditable="true" data-col="${resizeIndex}">
-
-    </div>
+    <div class="cell" contenteditable="true" 
+    data-type="cell"
+    data-col="${resizeIndex}" data-id="${row}:${resizeIndex}">
+    </div> 
     `;
 }
 
@@ -56,7 +57,7 @@ export function createTable(rowsCount=15){
 
     for (let i=0; i<rowsCount; ++i){
         const cells=new Array(colsCount)
-            .fill('').map(createCell)
+            .fill('').map((_,col)=>createCell(i,col))
             .join('');
         rows.push(createRow(i+1,cells)); 
     }
