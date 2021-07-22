@@ -1,7 +1,8 @@
 import {$} from '@core/dom' 
 
 export function resizeHandler($root,event){
-    const $target=$(event.target);
+    return new Promise(resolve=>{
+        const $target=$(event.target);
             const $parent=$target.closest('[data-type="resizable"]');
             const coords=$parent.getCoords();
             const resizeType=event.target.dataset.resize;
@@ -47,12 +48,25 @@ export function resizeHandler($root,event){
                     cells.forEach(el=>{
                         el.style.width=coords.width+delta+'px';
                     });
+
+                    value=coords.width+e.pageX-coords.right;
                 }
                 else {
                     const delta=e.pageY-coords.bottom;   
                     $parent.css({height:coords.height+delta+'px'});
+
+                    value=coords.height+e.pageY-coords.bottom;
                 }
 
                 document.onmouseup=null;
+                
+
+                resolve({
+                    value,
+                    rowOrCol:resizeType==='col'?'col':'row',
+                    id:resizeType==='col' ?$parent.data.col:$parent.data.row
+                });
             }
+    })
+    
 }
