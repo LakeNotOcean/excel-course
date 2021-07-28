@@ -114,6 +114,11 @@ class Dom{
         
     }
 
+    clear(){
+        this.html('');
+        return this;
+    }
+
 }
 
 // event.target
