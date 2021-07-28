@@ -1,46 +1,50 @@
 import { $ } from "@core/dom";
 import { Emitter } from "@core/Emitter";
 import { StoreSubscriber } from "@core/storeSubscriber";
+import { changeDate } from "@/redux/action";
+import { preventDefault } from "@/core/utils";
 
 export class Excel {
-    constructor(selector,options){
-        this.$el=$(selector);
-        this.components=options.components || []; 
-        this.store=options.store;
-        this.emitter= new Emitter();
-        this.subscriber=new StoreSubscriber(this.store);
-    }
+  constructor(options) {
+    this.components = options.components || [];
+    this.store = options.store;
+    this.emitter = new Emitter();
+    this.subscriber = new StoreSubscriber(this.store);
+  }
 
-    getRoot(){
-        const $root=$.create('div','excel');
-        const componentOptions={
-            emitter:this.emitter,
-            store:this.store
-        }
-        
-        this.components=this.components.map(Component => {
-            // const $el=document.createElement('div');
-            // $el.classList.add(Component.className);
-            const $el=$.create('div',Component.className);  
-            const component=new Component($el,componentOptions);
-            $el.html(component.toHTML());
-            $root.append($el);
-            return component;
-        });
-        return $root;
-    }
+  getRoot() {
+    const $root = $.create("div", "excel");
+    const componentOptions = {
+      emitter: this.emitter,
+      store: this.store,
+    };
 
-    render(){
-        this.$el.append(this.getRoot());
-        
-        this.subscriber.subscribeComponents(this.components);
-        this.components.forEach(element => {
-            element.init();
-        });
-    }
+    this.components = this.components.map((Component) => {
+      // const $el=document.createElement('div');
+      // $el.classList.add(Component.className);
+      const $el = $.create("div", Component.className);
+      const component = new Component($el, componentOptions);
+      $el.html(component.toHTML());
+      $root.append($el);
+      return component;
+    });
+    return $root;
+  }
 
-    destroy(){
-        this.subscriber.unsubscribeFromStore();
-        this.components.forEach(component=>component.destroy());
+  init() {
+    if (process.env.NODE_ENV === "production") {
+      document.addEventListener("contextmenu", preventDefault);
     }
+    this.store.dispatch(changeDate(Date.now()));
+    this.subscriber.subscribeComponents(this.components);
+    this.components.forEach((element) => {
+      element.init();
+    });
+  }
+
+  destroy() {
+    this.subscriber.unsubscribeFromStore();
+    this.components.forEach((component) => component.destroy());
+    document.removeEventListener("contextmenu", preventDefault);
+  }
 }
