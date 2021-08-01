@@ -3,30 +3,37 @@ import { Formula } from "@/components/formula/formula";
 import { Header } from "@/components/header/header";
 import { Table } from "@/components/table/table";
 import { Toolbar } from "@/components/toolbar/toolbar";
-import { createStore } from "@core/createStore";
+import { createStore } from "@core/store/createStore";
 import { rootReducer } from "@/redux/rootReducer";
-import { storage, debounce } from "@core/utils";
-import { Page } from "@core/Page";
+import { StateProcessor, LocalStorageClient } from "@core/page/StateProcessor";
+import { Page } from "@core/page/Page";
 import { normalizeInitialState } from "@/redux/initialState";
 
-function storageName(param) {
-  return "excel:" + param;
-}
-
 export class ExcelPage extends Page {
-  getRoot() {
-    const params = this.params ? this.params : Date.now().toString();
-    const pageName = storageName(this.params);
+  constructor(param) {
+    super(param);
 
-    const state = storage(pageName);
+    this.storeSub = null;
+    this.processor = new StateProcessor(new LocalStorageClient(this.params));
+  }
+
+  async getRoot() {
+    //const params = this.params ? this.params : Date.now().toString();
+    //const pageName = storageName(this.params);
+
+    // const state = storage(pageName);
+    // const initialState = normalizeInitialState(state);
+
+    // const stateListener = debounce((state) => {
+    //   storage(pageName, state);
+    // }, 300);
+
+    // this.storeSub = store.subscribe(stateListener);
+
+    const state = await this.processor.get();
     const initialState = normalizeInitialState(state);
     const store = createStore(rootReducer, initialState);
-
-    const stateListener = debounce((state) => {
-      storage(pageName, state);
-    }, 300);
-
-    store.subscribe(stateListener);
+    this.storeSub = store.subscribe(this.processor.listen);
 
     this.excel = new Excel({
       components: [Header, Toolbar, Formula, Table],
@@ -42,5 +49,6 @@ export class ExcelPage extends Page {
 
   destroy() {
     this.excel.destroy();
+    this.storeSub.unsubscribe();
   }
 }

@@ -1,42 +1,47 @@
-import {$} from '@core/dom';
-import {ActiveRoute} from '@core/routes/ActiveRoute';
+import { $ } from "@core/dom";
+import { ActiveRoute } from "@core/routes/ActiveRoute";
+import { Loader } from "../../components/loader";
 
-
-export class Router{
-    constructor(selector,routes){
-        if (!selector){
-            throw Error('Selector is req');
-        }
-
-        this.$placeholder=$(selector);
-        this.routes=routes;
-        this.page=null;
-
-        this.changePageHandler=this.changePageHandler.bind(this);
-
-        this.init();
+export class Router {
+  constructor(selector, routes) {
+    if (!selector) {
+      throw Error("Selector is req");
     }
 
-    init(){
-        window.addEventListener('hashchange',this.changePageHandler);
-        this.changePageHandler();
+    this.$placeholder = $(selector);
+    this.routes = routes;
+    this.page = null;
+
+    this.loader = new Loader();
+
+    this.changePageHandler = this.changePageHandler.bind(this);
+
+    this.init();
+  }
+
+  init() {
+    window.addEventListener("hashchange", this.changePageHandler);
+    this.changePageHandler();
+  }
+
+  async changePageHandler() {
+    if (this.page) {
+      this.page.destroy();
     }
-    
-    changePageHandler(){
-        if (this.page){
-            this.page.destroy();
-        }
-        this.$placeholder.clear();
-        const Page=ActiveRoute.path.includes('excel')?this.routes.excel:this.routes.dashboard;
-        this.page=new Page(ActiveRoute.param);
+    this.$placeholder.clear().append(this.loader);
+    const Page = ActiveRoute.path.includes("excel")
+      ? this.routes.excel
+      : this.routes.dashboard;
+    this.page = new Page(ActiveRoute.param);
 
+    const $root = await this.page.getRoot();
 
-        this.$placeholder.append(this.page.getRoot());
+    this.$placeholder.clear().append($root);
 
-        this.page.afterRender();
-    }
+    this.page.afterRender();
+  }
 
-    destroy(){
-        window.removeEventListener('hashchange',this.changePageHandler);
-    }
+  destroy() {
+    window.removeEventListener("hashchange", this.changePageHandler);
+  }
 }
